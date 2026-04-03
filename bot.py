@@ -22,7 +22,7 @@ OWNER_IDS = [int(x.strip()) for x in os.getenv("OWNER_IDS", "8627624927").split(
 
 # 2 Channels + 1 WhatsApp + 1 YouTube
 CHANNEL_1 = "@ssbugchannel"
-CHANNEL_2 = "@your_second_channel"
+CHANNEL_2 = "@syedhacks"
 YOUTUBE_LINK = "https://youtube.com/@shadowhere.460"
 WHATSAPP_LINK = "https://whatsapp.com/channel/0029VbD54jxEgGfIqPaPSK24"
 
