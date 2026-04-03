@@ -21,7 +21,7 @@ OWNER_IDS = [int(x.strip()) for x in os.getenv("OWNER_IDS", "8627624927").split(
 
 # 2 Channels + 1 WhatsApp + 1 YouTube
 CHANNEL_1 = "@ssbugchannel"
-CHANNEL_2 = "@your_second_channel"  # CHANGE THIS
+CHANNEL_2 = "@syedhacks"  # CHANGE THIS
 YOUTUBE_LINK = "https://youtube.com/@shadowhere.460"
 WHATSAPP_LINK = "https://whatsapp.com/channel/0029VbD54jxEgGfIqPaPSK24"
 
@@ -145,15 +145,24 @@ async def check_user_joined(bot, user_id):
         return False
 
 # ============================================
-# STYLISH UI WITH EMOJIS
+# PREMIUM STYLISH UI WITH EMOJIS
 # ============================================
 
 def banner(text):
-    return f"🔥 <b>{text}</b> 🔥"
+    return f"✨🔥 {text} 🔥✨"
 
 def divider():
-    return "━━━━━━━━━━━━━━━━━━━━━━━"
+    return "━" * 23
 
+def premium_box(title, content):
+    return f"""
+╔═══════════════════════╗
+║  ✨ {title:^17} ✨  ║
+╚═══════════════════════╝
+{content}
+━━━━━━━━━━━━━━━━━━━━━━━"""
+
+# Keyboards - Premium Style
 def start_kb():
     return InlineKeyboardMarkup([
         [
@@ -215,13 +224,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "email_token": None
         })
 
-        welcome = f"""{banner("TempMail by SHADOW")}
-
-{divider}
+        welcome = premium_box("TempMail by SHADOW", f"""
 👤 <b>Name:</b> @{user.username or 'N/A'}
 🆔 <b>ID:</b> <code>{uid}</code>
 📅 <b>Joined:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}
-{divider}
 
 ⚠️ <b>COMPLETE VERIFICATION:</b>
 
@@ -230,7 +236,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 🔗 Subscribe YouTube
 🔗 Join WhatsApp
 
-<i>Then click VERIFY ACCESS</i>"""
+<i>Then click VERIFY ACCESS</i>""")
 
         await update.message.reply_photo(
             photo=BANNER_URL,
@@ -242,11 +248,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if user_data.get('verified'):
             await show_main_menu(update, context)
         else:
+            text = premium_box("⚠️ NOT VERIFIED", "Please complete verification first!")
             await update.message.reply_photo(
                 photo=BANNER_URL,
-                caption=f"{banner('⚠️ NOT VERIFIED')}
-
-Please complete verification first!",
+                caption=text,
                 parse_mode=ParseMode.HTML,
                 reply_markup=start_kb()
             )
@@ -259,17 +264,15 @@ async def verify_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     joined = await check_user_joined(context.bot, uid)
 
     if not joined:
-        await query.edit_message_caption(
-            caption=f"""{banner("❌ NOT JOINED")}
-
-{divider}
+        text = premium_box("❌ NOT JOINED", f"""
 ⚠️ <b>Please join all channels:</b>
 
 📢 {CHANNEL_1}
 📢 {CHANNEL_2}
 
-<i>Then click VERIFY again</i>
-{divider}""",
+<i>Then click VERIFY again</i>""")
+        await query.edit_message_caption(
+            caption=text,
             parse_mode=ParseMode.HTML,
             reply_markup=start_kb()
         )
@@ -281,13 +284,13 @@ async def verify_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Animation
     await query.edit_message_caption(
-        caption=f"{banner('⚡ VERIFYING...')}",
+        caption=premium_box("⚡ VERIFYING...", "Please wait..."),
         parse_mode=ParseMode.HTML
     )
     await asyncio.sleep(0.5)
 
     await query.edit_message_caption(
-        caption=f"{banner('✅ ACCESS GRANTED!')}",
+        caption=premium_box("✅ ACCESS GRANTED!", "Welcome to TempMail by SHADOW!"),
         parse_mode=ParseMode.HTML
     )
     await asyncio.sleep(0.5)
@@ -299,15 +302,12 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, fro
     uid = user.id
     is_owner = uid in OWNER_IDS
 
-    text = f"""{banner("TempMail by SHADOW")}
-
-{divider}
+    text = premium_box("TempMail by SHADOW", f"""
 👤 <b>Name:</b> @{user.username or 'N/A'}
 🆔 <b>ID:</b> <code>{uid}</code>
 ⏰ <b>Online:</b> {datetime.now().strftime('%H:%M:%S')}
-{divider}
 
-⚡ <i>Select an option below:</i>"""
+⚡ <i>Select an option below:</i>""")
 
     if from_verify:
         await update.callback_query.edit_message_caption(
@@ -331,22 +331,19 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, fro
             )
 
 # ============================================
-# USER MENU HANDLER - FIXED
+# USER MENU HANDLER
 # ============================================
 
 async def user_menu_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer("📋 Opening User Menu...")
 
-    text = f"""{banner("📋 USER MENU")}
-
-{divider}
+    text = premium_box("📋 USER MENU", """
 📧 <b>Get Temp Mail</b> - Free unlimited emails
 📨 <b>Check Inbox</b> - View received OTPs
 👤 <b>My Profile</b> - Your account info
-{divider}
 
-💯 <b>100% FREE</b> - No limits!"""
+💯 <b>100% FREE</b> - No limits!""")
 
     await query.edit_message_text(
         text,
@@ -355,7 +352,7 @@ async def user_menu_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # ============================================
-# MAIL.TM INTEGRATION - 100% FREE
+# MAIL.TM INTEGRATION
 # ============================================
 
 async def getmail_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -397,16 +394,13 @@ async def getmail_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             asyncio.create_task(poll_otp_task(uid, email, token, context.bot))
 
-            mail_text = f"""{banner("📧 TEMP MAIL READY")}
-
-{divider}
+            mail_text = premium_box("📧 TEMP MAIL READY", f"""
 📬 <b>Email:</b> <code>{email}</code>
 🔑 <b>Password:</b> <code>{password}</code>
 ⏱ <b>Expires:</b> 15 minutes
-{divider}
 
 ⚡ <b>OTP will appear automatically!</b>
-💯 <b>100% FREE</b> - Unlimited emails"""
+💯 <b>100% FREE</b> - Unlimited emails""")
 
             await query.edit_message_text(
                 mail_text, 
@@ -419,9 +413,7 @@ async def getmail_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
     except Exception as e:
         await query.edit_message_text(
-            f"❌ <b>Error:</b> <code>{str(e)}</code>
-
-Try again!", 
+            f"❌ <b>Error:</b> <code>{str(e)}</code>\n\nTry again!", 
             parse_mode=ParseMode.HTML
         )
 
@@ -457,10 +449,10 @@ async def poll_otp_task(uid, email, token, bot):
 
                                 alert = f"""🚨 {banner("OTP RECEIVED")} 🚨
 
-{divider}
+{divider()}
 📧 <b>From:</b> <code>{sender}</code>
 📝 <b>Subject:</b> <code>{subject}</code>
-{divider}
+{divider()}
 
 🔐 <b>OTP CODE:</b>
 <code>{otp or 'Not found in email'}</code>
@@ -478,8 +470,7 @@ async def poll_otp_task(uid, email, token, bot):
             save_user(uid, user_data)
         await bot.send_message(
             uid, 
-            "⏱️ <b>Email expired!</b>
-Use /start to get new one.", 
+            "⏱️ <b>Email expired!</b>\nUse /start to get new one.", 
             parse_mode=ParseMode.HTML
         )
 
@@ -491,9 +482,9 @@ def extract_otp(text):
 
     patterns = [
         r'(\d{3}[-\s]\d{3})',
-        r'(\d{6})',
-        r'(\d{4})',
-        r'(\d{8})',
+        r'\b(\d{6})\b',
+        r'\b(\d{4})\b',
+        r'\b(\d{8})\b',
         r'(?i)otp[:\s]+(\d{3}[-\s]?\d{3})',
         r'(?i)otp[:\s]+(\d+)',
         r'(?i)code[:\s]+(\d{3}[-\s]\d{3})',
@@ -521,10 +512,9 @@ async def inbox_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     email = user_data.get('email')
 
     if not email:
+        text = premium_box("❌ NO ACTIVE EMAIL", "Get one first!")
         await query.edit_message_text(
-            f"❌ {banner('NO ACTIVE EMAIL')}
-
-Get one first!", 
+            text, 
             parse_mode=ParseMode.HTML,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("📧 ɢᴇᴛ ᴍᴀɪʟ", callback_data="getmail")]
@@ -533,11 +523,8 @@ Get one first!",
         return
 
     otps = get_user_otps(uid, 5)
-    text = f"""{banner("📨 INBOX")}
-
-{divider}
-📬 <b>Email:</b> <code>{email}</code>
-{divider}"""
+    lines = [premium_box("📨 INBOX", f"""
+📬 <b>Email:</b> <code>{email}</code>""")]
 
     if otps:
         for i, o in enumerate(otps, 1):
@@ -545,14 +532,11 @@ Get one first!",
             time_disp = o.get('time', '')
             if time_disp:
                 time_disp = time_disp[11:16]
-            text += f"
-{i}. 🔐 <code>{otp_disp}</code> | ⏰ {time_disp}"
+            lines.append(f"{i}. 🔐 <code>{otp_disp}</code> | ⏰ {time_disp}")
     else:
-        text += "
-<i>Waiting for OTP...</i>"
+        lines.append("<i>Waiting for OTP...</i>")
 
-    text += f"
-{divider}"
+    text = "\n".join(lines) + "\n" + divider()
 
     await query.edit_message_text(
         text, 
@@ -569,15 +553,12 @@ async def profile_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = query.from_user.id
     user_data = get_user(uid)
 
-    text = f"""{banner("👤 MY PROFILE")}
-
-{divider}
+    text = premium_box("👤 MY PROFILE", f"""
 🆔 <b>ID:</b> <code>{uid}</code>
 👤 <b>Name:</b> {user_data.get('name', 'N/A')}
 📧 <b>Active Email:</b> <code>{user_data.get('email') or 'None'}</code>
-{divider}
 
-✅ <b>FREE USER</b> - Unlimited access!"""
+✅ <b>FREE USER</b> - Unlimited access!""")
 
     await query.edit_message_text(
         text, 
@@ -588,7 +569,7 @@ async def profile_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # ============================================
-# OWNER MENU - FIXED
+# OWNER MENU
 # ============================================
 
 async def owner_menu_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -600,14 +581,11 @@ async def owner_menu_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer("❌ Owner only!", show_alert=True)
         return
 
-    text = f"""{banner("👑 OWNER MENU")}
-
-{divider}
+    text = premium_box("👑 OWNER MENU", f"""
 🆔 <b>Admin ID:</b> <code>{uid}</code>
 ⏰ <b>Time:</b> {datetime.now().strftime('%H:%M:%S')}
-{divider}
 
-⚡ <i>Select admin action:</i>"""
+⚡ <i>Select admin action:</i>""")
 
     await query.edit_message_text(
         text,
@@ -626,15 +604,11 @@ async def broadcast_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer("📢 Send broadcast message...")
 
     await query.edit_message_text(
-        f"""{banner("📢 BROADCAST")}
-
-{divider}
+        premium_box("📢 BROADCAST", """
 📝 <b>Send your message now</b>
 <i>(Type /cancel to abort)</i>
 
-📊 <b>Target:</b> All users
-⏰ <b>Time:</b> {datetime.now().strftime('%H:%M:%S')}
-{divider}""",
+📊 <b>Target:</b> All users"""),
         parse_mode=ParseMode.HTML
     )
     context.user_data['awaiting_broadcast'] = True
@@ -650,16 +624,13 @@ async def addtoken_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer("➕ Send bot token...")
 
     await query.edit_message_text(
-        f"""{banner("➕ ADD TOKEN")}
-
-{divider}
+        premium_box("➕ ADD TOKEN", """
 📝 <b>Send bot token to connect</b>
 <i>(Type /cancel to abort)</i>
 
 <code>Format: 123456789:ABCdef...</code>
 
-⚠️ <b>Bot will be online instantly!</b>
-{divider}""",
+⚠️ <b>Bot will be online instantly!</b>"""),
         parse_mode=ParseMode.HTML
     )
     context.user_data['awaiting_token'] = True
@@ -676,24 +647,15 @@ async def tokenlist_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tokens = get_connected_tokens()
 
     if not tokens:
-        text = f"""{banner("📋 TOKEN LIST")}
-
-<i>No connected bots found.</i>"""
+        text = premium_box("📋 TOKEN LIST", "<i>No connected bots found.</i>")
     else:
-        text = f"""{banner("📋 CONNECTED BOTS")}
-
-{divider}
-<b>Total:</b> {len(tokens)} bots
-{divider}
-
-"""
+        lines = [premium_box("📋 CONNECTED BOTS", f"<b>Total:</b> {len(tokens)} bots"), ""]
         for i, (token, data) in enumerate(tokens.items(), 1):
             bot_name = data.get('bot_username', 'Unknown')
             added = data.get('added_at', 'Unknown')[:10]
-            text += f"{i}. 🤖 @{bot_name}
-   📅 {added}
-
-"
+            lines.append(f"{i}. 🤖 @{bot_name}")
+            lines.append(f"   📅 {added}\n")
+        text = "\n".join(lines)
 
     await query.edit_message_text(
         text,
@@ -717,15 +679,12 @@ async def stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     verified = sum(1 for u in users.values() if u.get('verified'))
 
-    text = f"""{banner("📊 STATISTICS")}
-
-{divider}
+    text = premium_box("📊 STATISTICS", f"""
 👥 <b>Total Users:</b> <code>{len(users)}</code>
 ✅ <b>Verified:</b> <code>{verified}</code>
 🤖 <b>Connected Bots:</b> <code>{len(tokens)}</code>
-{divider}
 
-📅 <b>Date:</b> {datetime.now().strftime('%Y-%m-%d')}"""
+📅 <b>Date:</b> {datetime.now().strftime('%Y-%m-%d')}""")
 
     await query.edit_message_text(
         text,
@@ -748,11 +707,7 @@ async def clear_tokens_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_admin("clear_tokens", uid, "All tokens cleared")
 
     await query.edit_message_text(
-        f"""{banner("✅ TOKENS CLEARED")}
-
-{divider}
-All connected bots removed.
-{divider}""",
+        premium_box("✅ TOKENS CLEARED", "All connected bots removed."),
         parse_mode=ParseMode.HTML,
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="owner_menu")]
@@ -808,12 +763,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         log_admin("broadcast", uid, f"Sent: {sent}, Failed: {failed}")
         await message.reply_text(
-            f"""{banner("✅ BROADCAST COMPLETE")}
-
-{divider}
+            premium_box("✅ BROADCAST COMPLETE", f"""
 📤 <b>Sent:</b> <code>{sent}</code>
-❌ <b>Failed:</b> <code>{failed}</code>
-{divider}""",
+❌ <b>Failed:</b> <code>{failed}</code>"""),
             parse_mode=ParseMode.HTML
         )
         return
@@ -843,20 +795,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await start_connected_bot(token, bot_name)
 
             await update.message.reply_text(
-                f"""{banner("✅ BOT ONLINE")}
-
-{divider}
+                premium_box("✅ BOT ONLINE", f"""
 🤖 <b>Bot:</b> @{bot_name}
 🔑 <b>Status:</b> <code>ONLINE</code>
 ⏰ <b>Connected:</b> {datetime.now().strftime('%H:%M:%S')}
-{divider}
 
-✅ <b>Bot is now live and working!</b>""",
+✅ <b>Bot is now live and working!</b>"""),
                 parse_mode=ParseMode.HTML
             )
         except Exception as e:
-            await update.message.reply_text(f"❌ <b>Invalid token!</b>
-Error: {str(e)}")
+            await update.message.reply_text(f"❌ <b>Invalid token!</b>\nError: {str(e)}")
         return
 
 async def start_connected_bot(token, bot_username):
@@ -917,7 +865,7 @@ def main():
     # Message handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Callback handlers - ALL FIXED
+    # Callback handlers
     app.add_handler(CallbackQueryHandler(verify_cb, pattern="^verify$"))
     app.add_handler(CallbackQueryHandler(getmail_cb, pattern="^getmail$"))
     app.add_handler(CallbackQueryHandler(inbox_cb, pattern="^inbox$"))
