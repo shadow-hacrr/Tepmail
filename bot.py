@@ -15,7 +15,7 @@ import aiohttp
 # 🔧 CONFIG - YAHAN SIRF YEH 5 CHEEZEIN CHANGE KARO
 # ============================================
 
-BOT_TOKEN = "8642015132:AAEcouvdOL48gLCs1CMHvGViPGmV9BB9M0E"
+BOT_TOKEN = "8325172633:AAGKTq6O7T7yjBhzhBXhz3nkM2CinRHiR7Q"
 OWNER_ID = 8627624927
 CHANNEL_USERNAME = "@ssbugchannel"
 GROUP_USERNAME = "@ssbuggroup"
