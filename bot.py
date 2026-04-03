@@ -1,4 +1,3 @@
- -*- coding: utf-8 -*-import asyncio
 import json
 import os
 import re
@@ -240,7 +239,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 ┣ 🆔 <b>ɪᴅ:</b> <code>{uid}</code>
 ┣ ⏰ <b>ᴊᴏɪɴᴇᴅ:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
-{box_text("""⚠️ <b>ᴄᴏᴍᴘʟᴇᴛᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ:</b>
+{box_text(""" <b>ᴄᴏᴍᴘʟᴇᴛᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ:</b>
 
 ┣ 🔗 ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ 1
 ┣ 🔗 ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ 2  
