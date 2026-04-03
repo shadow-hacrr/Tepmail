@@ -1,4 +1,4 @@
-import asyncio
+ -*- coding: utf-8 -*-import asyncio
 import json
 import os
 import re
