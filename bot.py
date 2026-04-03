@@ -24,7 +24,7 @@ import aiohttp
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 OWNER_IDS = [int(x.strip()) for x in os.getenv("OWNER_IDS", "8627624927").split(",") if x.strip()]
 CHANNEL_USERNAME = "@ssbugchannel"
-GROUP_USERNAME = "https://t.me/+D-WcasFexV81NjFk"
+GROUP_USERNAME = "@+D-WcasFexV81NjFk"
 YOUTUBE_LINK = "https://youtube.com/@shadowhere.460"
 WHATSAPP_LINK = "https://whatsapp.com/channel/0029VbD54jxEgGfIqPaPSK24"
 
