@@ -25,7 +25,7 @@ WHATSAPP_LINK = "https://whatsapp.com/channel/0029VbD54jxEgGfIqPaPSK24"
 # ============================================
 # ⚙️ MAIL.TM API CONFIG
 # ============================================
-MAIL_API = "https://api.mail.tm"
+MAIL_API = "https://api.mail.tm/domains"
 
 # ============================================
 # 📁 FILE STORAGE SYSTEM (NO DATABASE!)
