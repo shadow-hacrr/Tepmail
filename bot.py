@@ -14,28 +14,28 @@ from telegram.error import Forbidden, BadRequest
 import aiohttp
 
 # ============================================
-# 🔧 CONFIG - YAHAN SIRF YEH CHANGE KARO
+# CONFIG
 # ============================================
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 OWNER_IDS = [int(x.strip()) for x in os.getenv("OWNER_IDS", "8627624927").split(",") if x.strip()]
 
 # 2 Channels + 1 WhatsApp + 1 YouTube
-CHANNEL_1 = "@ssbugchannel"           # First Channel
-CHANNEL_2 = "@syedhacks"     # Second Channel (CHANGE THIS)
+CHANNEL_1 = "@ssbugchannel"
+CHANNEL_2 = "@your_second_channel"
 YOUTUBE_LINK = "https://youtube.com/@shadowhere.460"
 WHATSAPP_LINK = "https://whatsapp.com/channel/0029VbD54jxEgGfIqPaPSK24"
 
-# Banner Image URL (Apni image ka URL daalo)
+# Banner Image URL
 BANNER_URL = "https://i.postimg.cc/zX8C13Tg/header.jpg"
 
 # ============================================
-# ⚙️ MAIL.TM API CONFIG
+# MAIL.TM API CONFIG
 # ============================================
 MAIL_API = "https://api.mail.tm"
 
 # ============================================
-# 📁 FILE STORAGE SYSTEM
+# FILE STORAGE SYSTEM
 # ============================================
 DATA_DIR = "bot_data"
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -63,14 +63,13 @@ def init_files():
     files = {
         "users.json": {},
         "otp_history.json": [],
-        "tokens.json": {},  # Connected bots
+        "tokens.json": {},
         "admin_logs.json": []
     }
     for fname, default in files.items():
         if not os.path.exists(get_path(fname)):
             save_json(fname, default)
 
-# User management
 def get_user(user_id):
     users = load_json("users.json", {})
     return users.get(str(user_id), {})
@@ -83,7 +82,6 @@ def save_user(user_id, data):
 def get_all_users():
     return load_json("users.json", {})
 
-# Connected Tokens (Sub-bots)
 def add_connected_token(token, added_by, bot_username):
     tokens = load_json("tokens.json", {})
     tokens[token] = {
@@ -103,7 +101,6 @@ def remove_connected_token(token):
 def get_connected_tokens():
     return load_json("tokens.json", {})
 
-# OTP History
 def add_otp_record(user_id, data):
     history = load_json("otp_history.json", [])
     data['user_id'] = user_id
@@ -119,7 +116,6 @@ def get_user_otps(user_id, limit=10):
     user_otps = [h for h in history if h.get('user_id') == user_id]
     return sorted(user_otps, key=lambda x: x.get('time', ''), reverse=True)[:limit]
 
-# Admin Logs
 def log_admin(action, admin_id, details=""):
     logs = load_json("admin_logs.json", [])
     logs.append({
@@ -133,17 +129,14 @@ def log_admin(action, admin_id, details=""):
     save_json("admin_logs.json", logs)
 
 # ============================================
-# 🔍 VERIFICATION CHECK
+# VERIFICATION CHECK
 # ============================================
 
 async def check_user_joined(bot, user_id):
-    """Check if user joined both channels"""
     try:
-        # Check channel 1
         channel1_member = await bot.get_chat_member(CHANNEL_1, user_id)
         channel1_ok = channel1_member.status in ['member', 'administrator', 'creator']
         
-        # Check channel 2
         channel2_member = await bot.get_chat_member(CHANNEL_2, user_id)
         channel2_ok = channel2_member.status in ['member', 'administrator', 'creator']
         
@@ -153,65 +146,62 @@ async def check_user_joined(bot, user_id):
         return False
 
 # ============================================
-# 🎨 UI & STYLISH DESIGN - MOBILE FRIENDLY
+# UI DESIGN - ASCII ONLY
 # ============================================
 
 def stylish_banner(text):
-    """Stylish banner for mobile"""
     return f"""
-┏━━━━━🔥 <b>{text}</b> 🔥━━━━━┓"""
+╔══════════════════════╗
+║  {text:^20}  ║
+╚══════════════════════╝"""
 
 def box_text(content):
-    """Box style for mobile"""
     return f"""
-┣━━━━━━━━━━━━━━━━━━━━━┫
+━━━━━━━━━━━━━━━━━━━━━━━
 {content}
-┗━━━━━━━━━━━━━━━━━━━━━┛"""
+━━━━━━━━━━━━━━━━━━━━━━━"""
 
-# Keyboards - Mobile Optimized
 def start_kb():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📢 ᴄʜᴀɴɴᴇʟ 1", url=f"https://t.me/{CHANNEL_1.replace('@', '')}"),
-            InlineKeyboardButton("📢 ᴄʜᴀɴɴᴇʟ 2", url=f"https://t.me/{CHANNEL_2.replace('@', '')}")
+            InlineKeyboardButton("CHANNEL 1", url=f"https://t.me/{CHANNEL_1.replace('@', '')}"),
+            InlineKeyboardButton("CHANNEL 2", url=f"https://t.me/{CHANNEL_2.replace('@', '')}")
         ],
         [
-            InlineKeyboardButton("▶️ ʏᴏᴜᴛᴜʙᴇ", url=YOUTUBE_LINK),
-            InlineKeyboardButton("💬 ᴡʜᴀᴛsᴀᴘᴘ", url=WHATSAPP_LINK)
+            InlineKeyboardButton("YOUTUBE", url=YOUTUBE_LINK),
+            InlineKeyboardButton("WHATSAPP", url=WHATSAPP_LINK)
         ],
-        [InlineKeyboardButton("🔐 ᴠᴇʀɪꜰʏ ᴀᴄᴄᴇss", callback_data="verify")]
+        [InlineKeyboardButton("VERIFY ACCESS", callback_data="verify")]
     ])
 
 def main_menu_kb(is_owner=False):
-    """Main menu - Image jaisa style"""
     buttons = [
-        [InlineKeyboardButton("|| ᴜsᴇʀ ᴍᴇɴᴜ", callback_data="user_menu")],
+        [InlineKeyboardButton("|| USER MENU", callback_data="user_menu")],
     ]
     if is_owner:
-        buttons.append([InlineKeyboardButton("|| ᴏᴡɴᴇʀ ᴍᴇɴᴜ", callback_data="owner_menu")])
+        buttons.append([InlineKeyboardButton("|| OWNER MENU", callback_data="owner_menu")])
     return InlineKeyboardMarkup(buttons)
 
 def user_menu_kb():
-    """User Menu - All free features"""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📧 ɢᴇᴛ ᴛᴇᴍᴘ ᴍᴀɪʟ", callback_data="getmail")],
-        [InlineKeyboardButton("📨 ᴄʜᴇᴄᴋ ɪɴʙᴏx", callback_data="inbox")],
-        [InlineKeyboardButton("👤 ᴍʏ ᴘʀᴏꜰɪʟᴇ", callback_data="profile")],
-        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ᴍᴀɪɴ", callback_data="main_menu")]
+        [InlineKeyboardButton("GET TEMP MAIL", callback_data="getmail")],
+        [InlineKeyboardButton("CHECK INBOX", callback_data="inbox")],
+        [InlineKeyboardButton("MY PROFILE", callback_data="profile")],
+        [InlineKeyboardButton("BACK TO MAIN", callback_data="main_menu")]
     ])
 
 def owner_menu_kb():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📢 ʙʀᴏᴀᴅᴄᴀsᴛ", callback_data="broadcast")],
-        [InlineKeyboardButton("➕ ᴀᴅᴅ ᴛᴏᴋᴇɴ", callback_data="addtoken")],
-        [InlineKeyboardButton("📋 ᴛᴏᴋᴇɴ ʟɪsᴛ", callback_data="tokenlist")],
-        [InlineKeyboardButton("🗑 ᴄʟᴇᴀʀ ᴛᴏᴋᴇɴs", callback_data="clear_tokens")],
-        [InlineKeyboardButton("📊 sᴛᴀᴛɪsᴛɪᴄs", callback_data="stats")],
-        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="main_menu")]
+        [InlineKeyboardButton("BROADCAST", callback_data="broadcast")],
+        [InlineKeyboardButton("ADD TOKEN", callback_data="addtoken")],
+        [InlineKeyboardButton("TOKEN LIST", callback_data="tokenlist")],
+        [InlineKeyboardButton("CLEAR TOKENS", callback_data="clear_tokens")],
+        [InlineKeyboardButton("STATISTICS", callback_data="stats")],
+        [InlineKeyboardButton("BACK", callback_data="main_menu")]
     ])
 
 # ============================================
-# 🤖 BOT COMMANDS
+# BOT COMMANDS
 # ============================================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -221,7 +211,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_data = get_user(uid)
     
     if not user_data:
-        # New user
         save_user(uid, {
             "uid": uid,
             "username": user.username,
@@ -234,21 +223,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         })
         
         welcome = f"""
-{stylish_banner("ᴄʏʙᴇʀ ʜᴀᴄᴋᴇʀ ʙᴏᴛ")}
+{stylish_banner("CYBER HACKER BOT")}
 
-┣ 👤 <b>ɴᴀᴍᴇ:</b> <code>@{user.username or 'N/A'}</code>
-┣ 🆔 <b>ɪᴅ:</b> <code>{uid}</code>
-┣ ⏰ <b>ᴊᴏɪɴᴇᴅ:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}
+Name: @{user.username or 'N/A'}
+ID: {uid}
+Joined: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
-{box_text(""" <b>ᴄᴏᴍᴘʟᴇᴛᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ:</b>
+COMPLETE VERIFICATION:
+Join Channel 1
+Join Channel 2  
+Subscribe YouTube
+Join WhatsApp
 
-┣ 🔗 ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ 1
-┣ 🔗 ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ 2  
-┣ 🔗 ꜱᴜʙsᴄʀɪʙᴇ ʏᴏᴜᴛᴜʙᴇ
-┣ 🔗 ᴊᴏɪɴ ᴡʜᴀᴛsᴀᴘᴘ
-
-<code>🔻 ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴠᴇʀɪꜰʏ 🔻</code>""")}
-"""
+Then click VERIFY"""
+        
         await update.message.reply_photo(
             photo=BANNER_URL,
             caption=welcome,
@@ -261,75 +249,68 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_photo(
                 photo=BANNER_URL,
-                caption=f"{stylish_banner('⚠️ ɴᴏᴛ ᴠᴇʀɪꜰɪᴇᴅ')}\n\n<code>ᴘʟᴇᴀsᴇ ᴄᴏᴍᴘʟᴇᴛᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜰɪʀsᴛ!</code>",
+                caption=f"{stylish_banner('NOT VERIFIED')}Please complete verification first!",
                 parse_mode=ParseMode.HTML,
                 reply_markup=start_kb()
             )
 
 async def verify_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer("ᴄʜᴇᴄᴋɪɴɢ...")
+    await query.answer("Checking...")
     uid = query.from_user.id
     
-    # ACTUAL CHECK
     joined = await check_user_joined(context.bot, uid)
     
     if not joined:
         await query.edit_message_caption(
             caption=f"""
-{stylish_banner("❌ ɴᴏᴛ ᴊᴏɪɴᴇᴅ")}
+{stylish_banner("NOT JOINED")}
 
-┣ ⚠️ <b>ᴘʟᴇᴀsᴇ ᴊᴏɪɴ ᴀʟʟ:</b>
+Please join all:
+{CHANNEL_1}
+{CHANNEL_2}
 
-┣ 📢 {CHANNEL_1}
-┣ 📢 {CHANNEL_2}
-
-<code>ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴠᴇʀɪꜰʏ ᴀɢᴀɪɴ</code>""",
+Then click VERIFY again""",
             parse_mode=ParseMode.HTML,
             reply_markup=start_kb()
         )
         return
     
-    # Save verified status
     user_data = get_user(uid)
     user_data['verified'] = True
     save_user(uid, user_data)
     
-    # Success animation messages
     await query.edit_message_caption(
-        caption=f"{stylish_banner('⚡ ᴠᴇʀɪꜰʏɪɴɢ...')}",
+        caption=f"{stylish_banner('VERIFYING...')}",
         parse_mode=ParseMode.HTML
     )
     await asyncio.sleep(0.5)
     
     await query.edit_message_caption(
-        caption=f"{stylish_banner('🔓 ᴀᴄᴄᴇss ɢʀᴀɴᴛᴇᴅ!')}",
+        caption=f"{stylish_banner('ACCESS GRANTED!')}",
         parse_mode=ParseMode.HTML
     )
     await asyncio.sleep(0.5)
     
-    # Auto start bot - Show main menu directly
     await show_main_menu(update, context, from_verify=True)
 
 async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, from_verify=False):
-    """Show main menu like the image style"""
     user = update.effective_user
     uid = user.id
     is_owner = uid in OWNER_IDS
     
     text = f"""
-{stylish_banner("ᴄʏʙᴇʀ ʜᴀᴄᴋᴇʀ ʙᴏᴛ")}
+{stylish_banner("CYBER HACKER BOT")}
 
-┣━┫ sʜᴀᴅᴏᴡ ┣━┫
+SHADOW
 
-┣ 👤 <b>ɴᴀᴍᴇ:</b> @{user.username or 'N/A'}
-┣ 🆔 <b>ɪᴅ:</b> <code>{uid}</code>
-┣ ⏰ <b>ᴏɴʟɪɴᴇ:</b> {datetime.now().strftime('%H:%M:%S')}
+Name: @{user.username or 'N/A'}
+ID: {uid}
+Online: {datetime.now().strftime('%H:%M:%S')}
 
-{box_text("<code>⚡ sᴇʟᴇᴄᴛ ᴍᴇɴᴜ ⚡</code>")}"""
+Select Menu Below"""
     
     if from_verify:
-        # Edit the verification message
         await update.callback_query.edit_message_caption(
             caption=text,
             parse_mode=ParseMode.HTML,
@@ -344,17 +325,16 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, fro
         )
 
 # ============================================
-# 📧 MAIL.TM INTEGRATION - 100% FREE
+# MAIL.TM INTEGRATION - 100% FREE
 # ============================================
 
 async def getmail_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer("ɢᴇɴᴇʀᴀᴛɪɴɢ...")
+    await query.answer("Generating...")
     uid = query.from_user.id
     
     try:
         async with aiohttp.ClientSession() as session:
-            # Get domain
             async with session.get(f"{MAIL_API}/domains") as resp:
                 domains_resp = await resp.json()
                 members = domains_resp.get('hydra:member', [])
@@ -362,7 +342,6 @@ async def getmail_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     raise Exception("No domains available!")
                 domain = random.choice(members)['domain']
 
-            # Create account
             username = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
             email = f"{username}@{domain}"
             password = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
@@ -371,14 +350,12 @@ async def getmail_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if resp.status != 201:
                     raise Exception("Failed to create account")
 
-            # Get token
             async with session.post(f"{MAIL_API}/token", json={"address": email, "password": password}) as resp:
                 token_data = await resp.json()
                 token = token_data.get('token')
                 if not token:
                     raise Exception("Token failed")
 
-            # Save user data
             user_data = get_user(uid)
             user_data.update({
                 'email': email,
@@ -388,32 +365,30 @@ async def getmail_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
             })
             save_user(uid, user_data)
 
-            # Start polling
             asyncio.create_task(poll_otp_task(uid, email, token, context.bot))
 
             mail_text = f"""
-{stylish_banner("📧 ᴛᴇᴍᴘ ᴍᴀɪʟ ʀᴇᴀᴅʏ")}
+{stylish_banner("TEMP MAIL READY")}
 
-┣ 📬 <b>ᴇᴍᴀɪʟ:</b> <code>{email}</code>
-┣ 🔑 <b>ᴘᴀssᴡᴏʀᴅ:</b> <code>{password}</code>
-┣ ⏱ <b>ᴇxᴘɪʀᴇs:</b> 15 ᴍɪɴᴜᴛᴇs
+Email: {email}
+Password: {password}
+Expires: 15 minutes
 
-{box_text("""⚡ <b>ᴏᴛᴘ ᴡɪʟʟ ᴀᴘᴘᴇᴀʀ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ!
-
-💯 100% ꜰʀᴇᴇ - ᴜɴʟɪᴍɪᴛᴇᴅ ᴇᴍᴀɪʟs""")}
-"""
+OTP will appear automatically!
+100% FREE - Unlimited emails"""
+            
             await query.edit_message_text(
                 mail_text, 
                 parse_mode=ParseMode.HTML, 
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔄 ɴᴇᴡ ᴍᴀɪʟ", callback_data="getmail")],
-                    [InlineKeyboardButton("📨 ᴄʜᴇᴄᴋ ɪɴʙᴏx", callback_data="inbox")],
-                    [InlineKeyboardButton("🔙 ᴜsᴇʀ ᴍᴇɴᴜ", callback_data="user_menu")]
+                    [InlineKeyboardButton("NEW MAIL", callback_data="getmail")],
+                    [InlineKeyboardButton("CHECK INBOX", callback_data="inbox")],
+                    [InlineKeyboardButton("USER MENU", callback_data="user_menu")]
                 ])
             )
     except Exception as e:
         await query.edit_message_text(
-            f"❌ <b>ᴇʀʀᴏʀ:</b> <code>{str(e)}</code>\n\nᴛʀʏ ᴀɢᴀɪɴ!", 
+            f"Error: {str(e)}Try again!", 
             parse_mode=ParseMode.HTML
         )
 
@@ -421,7 +396,7 @@ async def poll_otp_task(uid, email, token, bot):
     headers = {"Authorization": f"Bearer {token}"}
     seen = set()
     try:
-        for _ in range(180):  # 15 min
+        for _ in range(180):
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{MAIL_API}/messages", headers=headers) as resp:
                     data = await resp.json()
@@ -448,22 +423,19 @@ async def poll_otp_task(uid, email, token, bot):
                                 })
                                 
                                 alert = f"""
-{stylish_banner("🚨 ᴏᴛᴘ ʀᴇᴄᴇɪᴠᴇᴅ 🚨")}
+{stylish_banner("OTP RECEIVED")}
 
-┣ 📧 <b>ꜰʀᴏᴍ:</b> <code>{sender}</code>
-┣ 📝 <b>sᴜʙᴊᴇᴄᴛ:</b> <code>{subject}</code>
+From: {sender}
+Subject: {subject}
 
-{box_text(f"""🔐 <b>ᴏᴛᴘ ᴄᴏᴅᴇ:</b>
-<code>{otp or 'Not found'}</code>
+OTP CODE: {otp or 'Not found'}
 
-⏰ {datetime.now().strftime('%H:%M:%S')}""")}
-"""
+Time: {datetime.now().strftime('%H:%M:%S')}"""
                                 await bot.send_message(uid, alert, parse_mode=ParseMode.HTML)
             await asyncio.sleep(5)
     except Exception as e:
         print(f"Polling error: {e}")
     finally:
-        # Cleanup
         user_data = get_user(uid)
         if user_data.get('email') == email:
             user_data['email'] = None
@@ -471,12 +443,11 @@ async def poll_otp_task(uid, email, token, bot):
             save_user(uid, user_data)
         await bot.send_message(
             uid, 
-            "⏱️ <b>ᴇᴍᴀɪʟ ᴇxᴘɪʀᴇᴅ!</b>\nᴜsᴇ /sᴛᴀʀᴛ ᴛᴏ ɢᴇᴛ ɴᴇᴡ ᴏɴᴇ.", 
+            "Email expired! Use /start to get new one.", 
             parse_mode=ParseMode.HTML
         )
 
 def extract_otp(text):
-    """Extract OTP from text"""
     if not text:
         return None
     
@@ -503,7 +474,7 @@ def extract_otp(text):
     return None
 
 # ============================================
-# 📨 OTHER HANDLERS
+# OTHER HANDLERS
 # ============================================
 
 async def inbox_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -514,20 +485,20 @@ async def inbox_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if not email:
         await query.edit_message_text(
-            f"{stylish_banner('❌ ɴᴏ ᴀᴄᴛɪᴠᴇ ᴇᴍᴀɪʟ')}\n\nɢᴇᴛ ᴏɴᴇ ꜰɪʀsᴛ!", 
+            f"{stylish_banner('NO ACTIVE EMAIL')}Get one first!", 
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📧 ɢᴇᴛ ᴍᴀɪʟ", callback_data="getmail")]
+                [InlineKeyboardButton("GET MAIL", callback_data="getmail")]
             ])
         )
         return
     
     otps = get_user_otps(uid, 5)
     text = f"""
-{stylish_banner("📨 ɪɴʙᴏx")}
+{stylish_banner("INBOX")}
 
-┣ 📬 <b>ᴇᴍᴀɪʟ:</b> <code>{email}</code>
+Email: {email}
 
-┣━━━━━━━━━━━━━━━━━━━━━┫"""
+━━━━━━━━━━━━━━━━━━━━━━━"""
     
     if otps:
         for i, o in enumerate(otps, 1):
@@ -535,18 +506,18 @@ async def inbox_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
             time_disp = o.get('time', '')
             if time_disp:
                 time_disp = time_disp[11:16]
-            text += f"\n┣ {i}. <b>ᴏᴛᴘ:</b> <code>{otp_disp}</code> | ⏰ {time_disp}"
+            text += f"\n{i}. OTP: {otp_disp} | {time_disp}"
     else:
-        text += "\n┣ <i>ᴡᴀɪᴛɪɴɢ ꜰᴏʀ ᴏᴛᴘ...</i>"
+        text += "\nWaiting for OTP..."
     
-    text += "\n┗━━━━━━━━━━━━━━━━━━━━━┛"
+    text += "\n━━━━━━━━━━━━━━━━━━━━━━━"
     
     await query.edit_message_text(
         text, 
         parse_mode=ParseMode.HTML, 
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔄 ʀᴇꜰʀᴇsʜ", callback_data="inbox")],
-            [InlineKeyboardButton("🔙 ᴜsᴇʀ ᴍᴇɴᴜ", callback_data="user_menu")]
+            [InlineKeyboardButton("REFRESH", callback_data="inbox")],
+            [InlineKeyboardButton("USER MENU", callback_data="user_menu")]
         ])
     )
 
@@ -556,24 +527,24 @@ async def profile_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_data = get_user(uid)
     
     text = f"""
-{stylish_banner("👤 ᴘʀᴏꜰɪʟᴇ")}
+{stylish_banner("PROFILE")}
 
-┣ 🆔 <b>ɪᴅ:</b> <code>{uid}</code>
-┣ 👤 <b>ɴᴀᴍᴇ:</b> {user_data.get('name', 'N/A')}
-┣ 📧 <b>ᴀᴄᴛɪᴠᴇ ᴇᴍᴀɪʟ:</b> <code>{user_data.get('email') or 'None'}</code>
+ID: {uid}
+Name: {user_data.get('name', 'N/A')}
+Active Email: {user_data.get('email') or 'None'}
 
-{box_text("💯 <b>ꜰʀᴇᴇ ᴜsᴇʀ</b> - ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss")}
-"""
+100% FREE USER - Unlimited access"""
+    
     await query.edit_message_text(
         text, 
         parse_mode=ParseMode.HTML, 
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 ᴜsᴇʀ ᴍᴇɴᴜ", callback_data="user_menu")]
+            [InlineKeyboardButton("USER MENU", callback_data="user_menu")]
         ])
     )
 
 # ============================================
-# 👑 OWNER MENU & COMMANDS
+# OWNER MENU
 # ============================================
 
 async def owner_menu_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -581,17 +552,17 @@ async def owner_menu_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = query.from_user.id
     
     if uid not in OWNER_IDS:
-        await query.answer("❌ ᴏᴡɴᴇʀ ᴏɴʟʏ!", show_alert=True)
+        await query.answer("Owner only!", show_alert=True)
         return
     
     text = f"""
-{stylish_banner("👑 ᴏᴡɴᴇʀ ᴍᴇɴᴜ")}
+{stylish_banner("OWNER MENU")}
 
-┣ 🆔 <b>ᴀᴅᴍɪɴ ɪᴅ:</b> <code>{uid}</code>
-┣ ⏰ <b>ᴛɪᴍᴇ:</b> {datetime.now().strftime('%H:%M:%S')}
+Admin ID: {uid}
+Time: {datetime.now().strftime('%H:%M:%S')}
 
-{box_text("<code>⚡ sᴇʟᴇᴄᴛ ᴀᴅᴍɪɴ ᴀᴄᴛɪᴏɴ ⚡</code>")}
-"""
+Select admin action"""
+    
     await query.edit_message_text(
         text,
         parse_mode=ParseMode.HTML,
@@ -603,17 +574,17 @@ async def broadcast_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = query.from_user.id
     
     if uid not in OWNER_IDS:
-        await query.answer("❌ ᴏᴡɴᴇʀ ᴏɴʟʏ!", show_alert=True)
+        await query.answer("Owner only!", show_alert=True)
         return
     
     await query.edit_message_text(
-        f"""{stylish_banner("📢 ʙʀᴏᴀᴅᴄᴀsᴛ")}
+        f"""{stylish_banner("BROADCAST")}
 
-┣ 📝 <b>sᴇɴᴅ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ ɴᴏᴡ</b>
-┣ <code>(ᴛʏᴘᴇ /ᴄᴀɴᴄᴇʟ ᴛᴏ ᴀʙᴏʀᴛ)</code>
+Send your message now
+(Type /cancel to abort)
 
-┣ 📊 <b>ᴛᴀʀɢᴇᴛ:</b> ᴀʟʟ ᴜsᴇʀs
-┣ ⏰ <b>ᴛɪᴍᴇ:</b> {datetime.now().strftime('%H:%M:%S')}""",
+Target: All users
+Time: {datetime.now().strftime('%H:%M:%S')}""",
         parse_mode=ParseMode.HTML
     )
     context.user_data['awaiting_broadcast'] = True
@@ -623,18 +594,18 @@ async def addtoken_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = query.from_user.id
     
     if uid not in OWNER_IDS:
-        await query.answer("❌ ᴏᴡɴᴇʀ ᴏɴʟʏ!", show_alert=True)
+        await query.answer("Owner only!", show_alert=True)
         return
     
     await query.edit_message_text(
-        f"""{stylish_banner("➕ ᴀᴅᴅ ᴛᴏᴋᴇɴ")}
+        f"""{stylish_banner("ADD TOKEN")}
 
-┣ 📝 <b>sᴇɴᴅ ʙᴏᴛ ᴛᴏᴋᴇɴ ᴛᴏ ᴄᴏɴɴᴇᴄᴛ</b>
-┣ <code>(ᴛʏᴘᴇ /ᴄᴀɴᴄᴇʟ ᴛᴏ ᴀʙᴏʀᴛ)</code>
+Send bot token to connect
+(Type /cancel to abort)
 
-┣ <code>ꜰᴏʀᴍᴀᴛ: 123456789:ᴀʙᴄᴅᴇꜰ...</code>
+Format: 123456789:ABCdef...
 
-⚠️ <b>ʙᴏᴛ ᴡɪʟʟ ʙᴇ ᴏɴʟɪɴᴇ ɪɴsᴛᴀɴᴛʟʏ!</b>""",
+Bot will be online instantly!""",
         parse_mode=ParseMode.HTML
     )
     context.user_data['awaiting_token'] = True
@@ -644,31 +615,31 @@ async def tokenlist_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = query.from_user.id
     
     if uid not in OWNER_IDS:
-        await query.answer("❌ ᴏᴡɴᴇʀ ᴏɴʟʏ!", show_alert=True)
+        await query.answer("Owner only!", show_alert=True)
         return
     
     tokens = get_connected_tokens()
     
     if not tokens:
-        text = f"""{stylish_banner("📋 ᴛᴏᴋᴇɴ ʟɪsᴛ")}
+        text = f"""{stylish_banner("TOKEN LIST")}
         
-┣ <i>ɴᴏ ᴄᴏɴɴᴇᴄᴛᴇᴅ ʙᴏᴛs ꜰᴏᴜɴᴅ.</i>"""
+No connected bots found."""
     else:
-        text = f"""{stylish_banner("📋 ᴄᴏɴɴᴇᴄᴛᴇᴅ ʙᴏᴛs")}
+        text = f"""{stylish_banner("CONNECTED BOTS")}
 
-┣ <b>ᴛᴏᴛᴀʟ:</b> {len(tokens)} ʙᴏᴛs
+Total: {len(tokens)} bots
 
 """
         for i, (token, data) in enumerate(tokens.items(), 1):
             bot_name = data.get('bot_username', 'Unknown')
             added = data.get('added_at', 'Unknown')[:10]
-            text += f"┣ {i}. @{bot_name}\n┣    📅 {added}\n\n"
+            text += f"{i}. @{bot_name}\n   Date: {added}\n\n"
     
     await query.edit_message_text(
         text,
         parse_mode=ParseMode.HTML,
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="owner_menu")]
+            [InlineKeyboardButton("BACK", callback_data="owner_menu")]
         ])
     )
 
@@ -677,7 +648,7 @@ async def stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = query.from_user.id
     
     if uid not in OWNER_IDS:
-        await query.answer("❌ ᴏᴡɴᴇʀ ᴏɴʟʏ!", show_alert=True)
+        await query.answer("Owner only!", show_alert=True)
         return
     
     users = get_all_users()
@@ -686,20 +657,19 @@ async def stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     verified = sum(1 for u in users.values() if u.get('verified'))
     
     text = f"""
-{stylish_banner("📊 sᴛᴀᴛɪsᴛɪᴄs")}
+{stylish_banner("STATISTICS")}
 
-┣ 👥 <b>ᴛᴏᴛᴀʟ ᴜsᴇʀs:</b> <code>{len(users)}</code>
-┣ ✅ <b>ᴠᴇʀɪꜰɪᴇᴅ:</b> <code>{verified}</code>
-┣ 🤖 <b>ᴄᴏɴɴᴇᴄᴛᴇᴅ ʙᴏᴛs:</b> <code>{len(tokens)}</code>
+Total Users: {len(users)}
+Verified: {verified}
+Connected Bots: {len(tokens)}
 
-┣ 📅 <b>ᴅᴀᴛᴇ:</b> {datetime.now().strftime('%Y-%m-%d')}
-┗━━━━━━━━━━━━━━━━━━━━━┛
-"""
+Date: {datetime.now().strftime('%Y-%m-%d')}"""
+    
     await query.edit_message_text(
         text,
         parse_mode=ParseMode.HTML,
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="owner_menu")]
+            [InlineKeyboardButton("BACK", callback_data="owner_menu")]
         ])
     )
 
@@ -708,22 +678,22 @@ async def clear_tokens_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = query.from_user.id
     
     if uid not in OWNER_IDS:
-        await query.answer("❌ ᴏᴡɴᴇʀ ᴏɴʟʏ!", show_alert=True)
+        await query.answer("Owner only!", show_alert=True)
         return
     
     save_json("tokens.json", {})
     log_admin("clear_tokens", uid, "All tokens cleared")
     
     await query.edit_message_text(
-        f"{stylish_banner('✅ ᴛᴏᴋᴇɴs ᴄʟᴇᴀʀᴇᴅ')}\n\nᴀʟʟ ᴄᴏɴɴᴇᴄᴛᴇᴅ ʙᴏᴛs ʀᴇᴍᴏᴠᴇᴅ.",
+        f"{stylish_banner('TOKENS CLEARED')}\n\nAll connected bots removed.",
         parse_mode=ParseMode.HTML,
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="owner_menu")]
+            [InlineKeyboardButton("BACK", callback_data="owner_menu")]
         ])
     )
 
 # ============================================
-# 📩 MESSAGE HANDLERS (FOR OWNER COMMANDS)
+# MESSAGE HANDLERS
 # ============================================
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -732,12 +702,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if uid not in OWNER_IDS:
         return
     
-    # Handle broadcast
     if context.user_data.get('awaiting_broadcast'):
         context.user_data['awaiting_broadcast'] = False
         message = update.message
         
-        await message.reply_text("📤 <b>ʙʀᴏᴀᴅᴄᴀsᴛɪɴɢ...</b>", parse_mode=ParseMode.HTML)
+        await message.reply_text("Broadcasting...", parse_mode=ParseMode.HTML)
         
         users = get_all_users()
         sent = 0
@@ -772,72 +741,61 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         log_admin("broadcast", uid, f"Sent: {sent}, Failed: {failed}")
         await message.reply_text(
-            f"""{stylish_banner("✅ ʙʀᴏᴀᴅᴄᴀsᴛ ᴄᴏᴍᴘʟᴇᴛᴇ")}
+            f"""{stylish_banner("BROADCAST COMPLETE")}
 
-┣ 📤 <b>sᴇɴᴛ:</b> <code>{sent}</code>
-┣ ❌ <b>ꜰᴀɪʟᴇᴅ:</b> <code>{failed}</code>
-┗━━━━━━━━━━━━━━━━━━━━━┛""",
+Sent: {sent}
+Failed: {failed}""",
             parse_mode=ParseMode.HTML
         )
         return
     
-    # Handle token add - BOT KO ONLINE KARO
     if context.user_data.get('awaiting_token'):
         context.user_data['awaiting_token'] = False
         token = update.message.text.strip()
         
-        # Validate token format
         if not re.match(r'^\d+:[A-Za-z0-9_-]+$', token):
-            await update.message.reply_text("❌ <b>ɪɴᴠᴀʟɪᴅ ᴛᴏᴋᴇɴ ꜰᴏʀᴍᴀᴛ!</b>")
+            await update.message.reply_text("Invalid token format!")
             return
         
-        # Check if already exists
         tokens = get_connected_tokens()
         if token in tokens:
-            await update.message.reply_text("❌ <b>ᴛᴏᴋᴇɴ ᴀʟʀᴇᴀᴅʏ ᴄᴏɴɴᴇᴄᴛᴇᴅ!</b>")
+            await update.message.reply_text("Token already connected!")
             return
         
-        # Validate and get bot info, then START THE BOT
         try:
             from telegram import Bot
             test_bot = Bot(token)
             bot_info = await test_bot.get_me()
             bot_name = bot_info.username
             
-            # Save token
             add_connected_token(token, uid, bot_name)
             log_admin("add_token", uid, f"Bot: @{bot_name}")
             
-            # 🔥 START THE CONNECTED BOT
             await start_connected_bot(token, bot_name)
             
             await update.message.reply_text(
-                f"""{stylish_banner("✅ ʙᴏᴛ ᴏɴʟɪɴᴇ")}
+                f"""{stylish_banner("BOT ONLINE")}
 
-┣ 🤖 <b>ʙᴏᴛ:</b> @{bot_name}
-┣ 🔑 <b>sᴛᴀᴛᴜs:</b> <code>ᴏɴʟɪɴᴇ</code>
-┣ ⏰ <b>ᴄᴏɴɴᴇᴄᴛᴇᴅ:</b> {datetime.now().strftime('%H:%M:%S')}
+Bot: @{bot_name}
+Status: ONLINE
+Connected: {datetime.now().strftime('%H:%M:%S')}
 
-{box_text("✅ ʙᴏᴛ ɪs ɴᴏᴡ ʟɪᴠᴇ ᴀɴᴅ ᴡᴏʀᴋɪɴɢ!")}""",
+Bot is now live and working!""",
                 parse_mode=ParseMode.HTML
             )
         except Exception as e:
-            await update.message.reply_text(f"❌ <b>ɪɴᴠᴀʟɪᴅ ᴛᴏᴋᴇɴ!</b>\nᴇʀʀᴏʀ: {str(e)}")
+            await update.message.reply_text(f"Invalid token!\nError: {str(e)}")
         return
 
 async def start_connected_bot(token, bot_username):
-    """Start a connected bot with same functionality"""
     try:
         app = Application.builder().token(token).build()
         
-        # Same handlers as main bot
         app.add_handler(CommandHandler("start", start))
         app.add_handler(CommandHandler("cancel", cancel_cmd))
         
-        # Message handler
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         
-        # Callbacks
         app.add_handler(CallbackQueryHandler(verify_cb, pattern="^verify$"))
         app.add_handler(CallbackQueryHandler(getmail_cb, pattern="^getmail$"))
         app.add_handler(CallbackQueryHandler(inbox_cb, pattern="^inbox$"))
@@ -845,7 +803,6 @@ async def start_connected_bot(token, bot_username):
         app.add_handler(CallbackQueryHandler(lambda u, c: show_user_menu(u, c), pattern="^user_menu$"))
         app.add_handler(CallbackQueryHandler(lambda u, c: show_main_menu(u, c, edit=True), pattern="^main_menu$"))
         
-        # Owner callbacks
         app.add_handler(CallbackQueryHandler(owner_menu_cb, pattern="^owner_menu$"))
         app.add_handler(CallbackQueryHandler(broadcast_cb, pattern="^broadcast$"))
         app.add_handler(CallbackQueryHandler(addtoken_cb, pattern="^addtoken$"))
@@ -853,25 +810,23 @@ async def start_connected_bot(token, bot_username):
         app.add_handler(CallbackQueryHandler(stats_cb, pattern="^stats$"))
         app.add_handler(CallbackQueryHandler(clear_tokens_cb, pattern="^clear_tokens$"))
         
-        # Start in background
         asyncio.create_task(app.run_polling())
-        print(f"🤖 Connected bot @{bot_username} is now ONLINE!")
+        print(f"Connected bot @{bot_username} is now ONLINE!")
         
     except Exception as e:
-        print(f"❌ Failed to start connected bot: {e}")
+        print(f"Failed to start connected bot: {e}")
 
 async def show_user_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Show user menu"""
     query = update.callback_query
     await query.edit_message_text(
         f"""
-{stylish_banner("ᴜsᴇʀ ᴍᴇɴᴜ")}
+{stylish_banner("USER MENU")}
 
-┣ 📧 <b>ɢᴇᴛ ᴛᴇᴍᴘ ᴍᴀɪʟ</b> - ꜰʀᴇᴇ ᴜɴʟɪᴍɪᴛᴇᴅ
-┣ 📨 <b>ᴄʜᴇᴄᴋ ɪɴʙᴏx</b> - ᴠɪᴇᴡ ᴏᴛᴘs
-┣ 👤 <b>ᴍʏ ᴘʀᴏꜰɪʟᴇ</b> - ʏᴏᴜʀ ɪɴꜰᴏ
+GET TEMP MAIL - Free unlimited
+CHECK INBOX - View OTPs
+MY PROFILE - Your info
 
-{box_text("💯 100% ꜰʀᴇᴇ - ɴᴏ ʟɪᴍɪᴛs!")}""",
+100% FREE - No limits!""",
         parse_mode=ParseMode.HTML,
         reply_markup=user_menu_kb()
     )
@@ -880,34 +835,28 @@ async def cancel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
     is_owner = update.effective_user.id in OWNER_IDS
     await update.message.reply_text(
-        "❌ ᴄᴀɴᴄᴇʟʟᴇᴅ.",
+        "Cancelled.",
         reply_markup=main_menu_kb(is_owner)
     )
 
 # ============================================
-# 🚀 MAIN
+# MAIN
 # ============================================
 
 def main():
     init_files()
     
-    print("🤖 Cyber Hacker Bot - Starting...")
-    print(f"👑 Owners: {OWNER_IDS}")
-    print("📁 File-based storage initialized")
-    print("📧 Mail.tm API integrated")
-    print("💯 100% FREE system active")
-    print("🤖 Connected bots system active")
+    print("Cyber Hacker Bot - Starting...")
+    print(f"Owners: {OWNER_IDS}")
+    print("100% FREE system active")
     
     app = Application.builder().token(BOT_TOKEN).build()
     
-    # Commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("cancel", cancel_cmd))
     
-    # Message handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    # Callbacks - Main
     app.add_handler(CallbackQueryHandler(verify_cb, pattern="^verify$"))
     app.add_handler(CallbackQueryHandler(getmail_cb, pattern="^getmail$"))
     app.add_handler(CallbackQueryHandler(inbox_cb, pattern="^inbox$"))
@@ -915,7 +864,6 @@ def main():
     app.add_handler(CallbackQueryHandler(show_user_menu, pattern="^user_menu$"))
     app.add_handler(CallbackQueryHandler(lambda u, c: show_main_menu(u, c, edit=True), pattern="^main_menu$|^menu$"))
     
-    # Callbacks - Owner
     app.add_handler(CallbackQueryHandler(owner_menu_cb, pattern="^owner_menu$"))
     app.add_handler(CallbackQueryHandler(broadcast_cb, pattern="^broadcast$"))
     app.add_handler(CallbackQueryHandler(addtoken_cb, pattern="^addtoken$"))
@@ -923,7 +871,7 @@ def main():
     app.add_handler(CallbackQueryHandler(stats_cb, pattern="^stats$"))
     app.add_handler(CallbackQueryHandler(clear_tokens_cb, pattern="^clear_tokens$"))
     
-    print("✅ Bot ready!")
+    print("Bot ready!")
     app.run_polling()
 
 if __name__ == "__main__":
