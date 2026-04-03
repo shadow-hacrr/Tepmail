@@ -22,7 +22,7 @@ OWNER_IDS = [int(x.strip()) for x in os.getenv("OWNER_IDS", "8627624927").split(
 
 # TWO CHANNELS (NO GROUP)
 CHANNEL_USERNAME_1 = "@ssbugchannel"      # First channel
-CHANNEL_USERNAME_2 = "@syedhacks"     # Second channel (replace with actual)
+CHANNEL_USERNAME_2 = "@ssbugchannel2"     # Second channel (replace with actual)
 YOUTUBE_LINK = "https://youtube.com/@shadowhere.460"
 WHATSAPP_LINK = "https://whatsapp.com/channel/0029VbD54jxEgGfIqPaPSK24"
 
@@ -218,6 +218,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user_data = get_user(uid)
     
+    # ✅ AUTO CHECK: Agar pehle verified tha but ab channel leave kar diya
+    if user_data and user_data.get('verified'):
+        joined = await check_user_joined(context.bot, uid)
+        if not joined:
+            # User ne channel leave kar diya - unverify karo
+            user_data['verified'] = False
+            save_user(uid, user_data)
+            await update.message.reply_photo(
+                photo="https://i.postimg.cc/zX8C13Tg/header.jpg",
+                caption=f"""{banner_text("⚠️ VERIFICATION LOST")}
+
+❌ <b>You left the channels!</b>
+
+⚠️ <b>Re-join karo:</b>
+• {CHANNEL_USERNAME_1}
+• {CHANNEL_USERNAME_2}
+
+<code>🔻 Then click VERIFY & START 🔻</code>""",
+                parse_mode=ParseMode.HTML,
+                reply_markup=start_kb()
+            )
+            return
+    
     if not user_data:
         # New user
         save_user(uid, {
@@ -245,7 +268,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 <code>🔻 Then click VERIFY & START 🔻</code>
 """
-        # ✅ BANNER IMAGE ADDED
         await update.message.reply_photo(
             photo="https://i.postimg.cc/zX8C13Tg/header.jpg",
             caption=welcome,
@@ -254,9 +276,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     else:
         if user_data.get('verified'):
+            # ✅ Already verified - direct menu show
             await show_menu(update, context)
         else:
-            # ✅ BANNER IMAGE ADDED HERE TOO
             await update.message.reply_photo(
                 photo="https://i.postimg.cc/zX8C13Tg/header.jpg",
                 caption=f"""{banner_text("⚠️ VERIFICATION REQUIRED")}
@@ -280,8 +302,8 @@ async def verify_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     joined = await check_user_joined(context.bot, uid)
     
     if not joined:
-        await query.edit_message_text(
-            f"""{banner_text("❌ NOT JOINED")}
+        await query.edit_message_caption(
+            caption=f"""{banner_text("❌ NOT JOINED")}
 
 ⚠️ <b>Please join both channels:</b>
 • {CHANNEL_USERNAME_1}
@@ -298,16 +320,30 @@ Then click VERIFY & START again.""",
     user_data['verified'] = True
     save_user(uid, user_data)
     
-    # Animation
-    for text in ["⚡ SYSTEM BOOT...", "🔥 CONNECTING...", "✅ ACCESS GRANTED!"]:
-        await query.edit_message_text(
-            f"<code>{glitch_effect('TEMP MAIL BY SHADOW')}</code>\n\n<b>{neon_text(text)}</b>", 
-            parse_mode=ParseMode.HTML
-        )
-        await asyncio.sleep(0.5)
+    # ✅ SUCCESS - Delete photo and show menu directly
+    await query.delete_message()
     
-    # ✅ AUTO START - Show menu directly
-    await show_menu(update, context, edit=True)
+    # Animation messages
+    msg = await context.bot.send_message(
+        uid,
+        f"<code>{glitch_effect('TEMP MAIL BY SHADOW')}</code>\n\n<b>{neon_text('⚡ SYSTEM BOOT...')}</b>",
+        parse_mode=ParseMode.HTML
+    )
+    await asyncio.sleep(0.5)
+    await msg.edit_text(
+        f"<code>{glitch_effect('TEMP MAIL BY SHADOW')}</code>\n\n<b>{neon_text('🔥 CONNECTING...')}</b>",
+        parse_mode=ParseMode.HTML
+    )
+    await asyncio.sleep(0.5)
+    await msg.edit_text(
+        f"<code>{glitch_effect('TEMP MAIL BY SHADOW')}</code>\n\n<b>{neon_text('✅ ACCESS GRANTED!')}</b>",
+        parse_mode=ParseMode.HTML
+    )
+    await asyncio.sleep(0.5)
+    
+    # Delete animation and show menu
+    await msg.delete()
+    await show_menu(update, context, edit=False)
 
 # ============================================
 # 📧 MAIL.TM INTEGRATION - 100% FREE
@@ -317,6 +353,26 @@ async def getmail_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer("Generating...")
     uid = query.from_user.id
+    
+    # ✅ CHECK VERIFICATION AGAIN (auto-detect leave)
+    joined = await check_user_joined(context.bot, uid)
+    if not joined:
+        user_data = get_user(uid)
+        user_data['verified'] = False
+        save_user(uid, user_data)
+        await query.edit_message_text(
+            f"""{banner_text("❌ VERIFICATION LOST")}
+
+⚠️ <b>You left the channels!</b>
+
+Please re-join:
+• {CHANNEL_USERNAME_1}
+• {CHANNEL_USERNAME_2}
+
+Then /start again.""",
+            parse_mode=ParseMode.HTML
+        )
+        return
     
     try:
         async with aiohttp.ClientSession() as session:
@@ -477,6 +533,23 @@ def extract_otp(text):
 async def inbox_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     uid = query.from_user.id
+    
+    # ✅ AUTO CHECK VERIFICATION
+    joined = await check_user_joined(context.bot, uid)
+    if not joined:
+        user_data = get_user(uid)
+        user_data['verified'] = False
+        save_user(uid, user_data)
+        await query.edit_message_text(
+            f"""{banner_text("❌ VERIFICATION LOST")}
+
+⚠️ <b>You left the channels!</b>
+
+Please re-join and /start again.""",
+            parse_mode=ParseMode.HTML
+        )
+        return
+    
     user_data = get_user(uid)
     email = user_data.get('email')
     
@@ -521,6 +594,23 @@ async def inbox_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def profile_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     uid = query.from_user.id
+    
+    # ✅ AUTO CHECK VERIFICATION
+    joined = await check_user_joined(context.bot, uid)
+    if not joined:
+        user_data = get_user(uid)
+        user_data['verified'] = False
+        save_user(uid, user_data)
+        await query.edit_message_text(
+            f"""{banner_text("❌ VERIFICATION LOST")}
+
+⚠️ <b>You left the channels!</b>
+
+Please re-join and /start again.""",
+            parse_mode=ParseMode.HTML
+        )
+        return
+    
     user_data = get_user(uid)
     
     # Count total emails generated
@@ -549,6 +639,22 @@ async def profile_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def history_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     uid = query.from_user.id
+    
+    # ✅ AUTO CHECK VERIFICATION
+    joined = await check_user_joined(context.bot, uid)
+    if not joined:
+        user_data = get_user(uid)
+        user_data['verified'] = False
+        save_user(uid, user_data)
+        await query.edit_message_text(
+            f"""{banner_text("❌ VERIFICATION LOST")}
+
+⚠️ <b>You left the channels!</b>
+
+Please re-join and /start again.""",
+            parse_mode=ParseMode.HTML
+        )
+        return
     
     otps = get_user_otps(uid, 10)
     
